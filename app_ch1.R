@@ -395,16 +395,8 @@ server <- function(input, output, session) {
   
   observeEvent(input$about, showModal(modalDialog(
     title = "About the data and where it comes from", easyClose = TRUE, footer = modalButton("Close"),
-    p("Kolkata Police road accident records for 2021–2023 (all six sheets: fatal and non-fatal), shared by the Kolkata Police Department.",
-      "The sheets were typed by hand at many police stations, so every field was standardised before charting, with the same rules as Chapter 2."),
-    tags$ul(
-      tags$li(sprintf("Fatal crashes: %s cases in which %s people died. Non-fatal crashes: %s.",
-                      fmt(N_FATAL), fmt(sum(crashes$persons_killed, na.rm = TRUE)), fmt(N_TOTAL - N_FATAL))),
-      tags$li("Vehicle = the offending vehicle named by the police, grouped into eight categories. 'Unknown' means the record does not say (often a hit-and-run)."),
-      tags$li("The two vehicle charts ignore the severity and vehicle filters, because they compare vehicles and severities with each other."),
-      tags$li("Victim age, sex and helmet use are recorded for fatal crashes only, so the Typical victim card uses fatal crashes."),
-      tags$li("The thin lines on the deadliness chart are 95% Wilson intervals: the range the true rate probably lies in, given how few crashes some vehicles have."),
-      tags$li("Counts are crashes recorded by the police. They are not rates, because the data has no traffic volumes or vehicle numbers."))))) # Open data & methodology modal dialog
+    p("This dataset comes from official Kolkata Traffic Police road accident logs (2021–2023), originally compiled for urban road safety and bus-junction research in the Department of Civil Engineering (Transportation Engineering & Planning) at the Indian Institute of Technology (IIT) Kharagpur.")
+  ))) # Open data provenance modal dialog
   
   output$dl <- downloadHandler(
     filename = function() "kolkata_crashes_chapter1_filtered.csv",
