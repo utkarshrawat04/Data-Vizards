@@ -36,6 +36,11 @@ if (file.exists(CACHE) && file.mtime(CACHE) >= max(file.mtime(c(XLSX, STOPS)))) 
   saveRDS(list(crashes = crashes, stops = stops), CACHE)
 }     # Load cached crash and stop data or rebuild from Excel files if outdated
 
+# People killed: use persons_killed if the cached data has it, else persons, else count each fatal case as one death
+if (!"persons_killed" %in% names(crashes) || all(is.na(crashes$persons_killed[crashes$severity == "Fatal"])))
+  crashes$persons_killed <- if ("persons" %in% names(crashes)) crashes$persons else NA_integer_
+crashes$persons_killed[crashes$severity == "Fatal" & is.na(crashes$persons_killed)] <- 1L
+
 N_TOTAL   <- nrow(crashes)                                            # Total crash count
 N_BUS     <- sum(crashes$bus == "Bus")                                # Total crashes involving a bus
 N_LOCATED <- sum(!is.na(crashes$dist_stop_m))                         # Total crashes with valid coordinates
@@ -59,7 +64,7 @@ ui <- page_fluid(
   ),  # Inject custom CSS and first-visit tour trigger
   
   div(class = "hdr",
-      div(div(class = "over", "Chapter 4 of 4 · The main culprit: the bus"),
+      div(div(class = "over", "Chapter 4 of 4 · The main culprit"),
           h1("Kolkata Road Crashes 2021–2023"),
           div(class = "sub", sprintf("Kolkata Traffic Police records and WBTC bus stops · %s crashes, %s involving a bus · %s bus stops",
                                      fmt(N_TOTAL), fmt(N_BUS), fmt(nrow(stops))))),
@@ -198,8 +203,8 @@ server <- function(input, output, session) {
   
   output$story <- renderUI({
     ns <- near_share()
-    if (is.na(ns$bus) || ns$n_bus < 20) return("Buses crash where they stop")
-    sprintf("%s of bus crashes happen within %d m of a stop", pct(ns$bus), input$radius)
+    if (is.na(ns$bus) || ns$n_bus < 20) return("Buses Crash Where They Stop")
+    sprintf("%s of Bus Crashes Happen Within %d m of a Stop", pct(ns$bus), input$radius)
   }) # Dynamic narrative headline text
   
   output$lede <- renderUI({
@@ -427,4 +432,4 @@ server <- function(input, output, session) {
     }) # CSV export download handler
 }
 
-shinyApp(ui, server) 
+shinyApp(ui, server)

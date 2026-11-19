@@ -81,7 +81,7 @@ ui <- page_fluid(
       div(class = "sidebar-label", "Filters"),
       checkboxGroupInput("year", "Year", choices = YEARS, selected = YEARS, inline = TRUE),
       tags$label("Severity"),
-      div(class = "seg", radioButtons("severity", NULL, inline = TRUE, selected = DEFAULT_SEV, choices = c("All" = "all", "Fatal" = "fatal", "Non-fatal" = "nonfatal"))),
+      div(class = "seg", radioButtons("severity", NULL, inline = TRUE, selected = DEFAULT_SEV, choices = c("All" = "all", "Fatal" = "fatal", "Non-Fatal" = "nonfatal"))),
       selectInput("vehicle", "Vehicle group (offending)", choices = VEH_LVLS),
       selectInput("road_user", "Road user (victim)", choices = RU_LVLS),
       sliderInput("hours", "Hour of day", min = 0, max = 23, value = c(0, 23), step = 1, post = ":00", sep = ""),
@@ -169,7 +169,7 @@ server <- function(input, output, session) {
     items <- list()
     if (length(input$year) != length(YEARS)) items <- c(items, list(chip("year", paste(sort(input$year), collapse = ", "))))
     if (!identical(input$severity, DEFAULT_SEV))
-      items <- c(items, list(chip("severity", c(all = "All severities", fatal = "Fatal", nonfatal = "Non-fatal")[[input$severity]])))
+      items <- c(items, list(chip("severity", c(all = "All severities", fatal = "Fatal", nonfatal = "Non-Fatal")[[input$severity]])))
     if (input$vehicle != "All vehicles")     items <- c(items, list(chip("vehicle", input$vehicle)))
     if (input$road_user != "All road users") items <- c(items, list(chip("road_user", input$road_user)))
     if (!identical(as.integer(input$hours), c(0L, 23L)))
@@ -199,9 +199,9 @@ server <- function(input, output, session) {
   # Dynamic headline and KPI cards
   output$story <- renderUI({
     txt <- switch(input$severity,
-                  nonfatal = "Minor crashes run from 10 am to midnight, every day",
-                  fatal    = "Fatal crashes: when and where they happen",
-                  "When and where crashes happen, fatal and non-fatal together")
+                  nonfatal = "Minor Crashes Run from 10 am to Midnight, Every Day",
+                  fatal    = "Fatal Crashes: When and Where They Happen",
+                  "When and Where Crashes Happen, Fatal and Non-Fatal Together")
     div(class = "story", txt)
   })
   
@@ -382,7 +382,7 @@ server <- function(input, output, session) {
                          clusterOptions = markerClusterOptions(showCoverageOnHover = FALSE, maxClusterRadius = 45,
                                                                iconCreateFunction = cluster_icon),
                          popup = ~sprintf("<b>%s</b> &middot; %s<br>%s %d, %s<br>Offending: %s<br>Victim: %s<br>%s",
-                                          station, severity, ifelse(is.na(month_start), "", format(month_start, "%b")), year,
+                                          station, sub("Non-fatal", "Non-Fatal", severity), ifelse(is.na(month_start), "", format(month_start, "%b")), year,
                                           ifelse(is.na(hour), "time n/a", hour_lbl(hour)),
                                           vehicle, road_user, ifelse(is.na(place), "", place)))
     }

@@ -33,10 +33,10 @@ if (!all(need_cols %in% names(d))) {
 }
 
 if (!"period" %in% names(d)) d$period <- ifelse(is.na(d$hour), NA, ifelse(d$hour >= 6 & d$hour < 18, "Day", "Night"))
-d$severity <- ifelse(tolower(as.character(d$severity)) %in% c("fatal", "f"), "Fatal", "Non-fatal")
+d$severity <- ifelse(tolower(as.character(d$severity)) %in% c("fatal", "f"), "Fatal", "Non-Fatal")
 
-sev_fill <- c("Fatal" = MAROON,    "Non-fatal" = YELLOW) # Fill colors by severity
-sev_line <- c("Fatal" = "#3D0F28", "Non-fatal" = "#8A6200") # Outline colors by severity
+sev_fill <- c("Fatal" = MAROON,    "Non-Fatal" = YELLOW) # Fill colors by severity
+sev_line <- c("Fatal" = "#3D0F28", "Non-Fatal" = "#8A6200") # Outline colors by severity
 
 # Indexed year-over-year trend plot (start year = 100)
 trend_plot <- function(df) {
@@ -183,7 +183,7 @@ fatal_icon <- makeIcon(paste0("data:image/svg+xml;charset=UTF-8,", URLencode(dia
 STOP_FILL <- "#8C8C8C"; STOP_LINE <- "#3F3F3F"
 legend_html <- function(stops = FALSE) paste0("<div style='background:#fff;padding:6px 10px;border-radius:4px;line-height:1.6'><b>Severity</b><br>",
                                               "<span style='color:", sev_fill[["Fatal"]], "'>&#9670;</span> Fatal<br>",
-                                              "<span style='color:", sev_fill[["Non-fatal"]], "'>&#9679;</span> Non-fatal",
+                                              "<span style='color:", sev_fill[["Non-Fatal"]], "'>&#9679;</span> Non-Fatal",
                                               if (stops) paste0("<br><span style='color:", STOP_LINE, "'>&#9679;</span> Bus stop"), "</div>")
 
 base_map <- function(legend = TRUE, stops = FALSE) {
@@ -199,9 +199,9 @@ popup_txt <- function(x) paste0("<b>", x$severity, "</b> (", x$year, ")<br>Victi
                                 htmlEscape(ifelse(is.na(x$place), "", x$place)))
 
 add_points <- function(map, df) {
-  pts <- filter(df, !is.na(lat)); nf <- filter(pts, severity == "Non-fatal"); fa <- filter(pts, severity == "Fatal")
+  pts <- filter(df, !is.na(lat)); nf <- filter(pts, severity == "Non-Fatal"); fa <- filter(pts, severity == "Fatal")
   if (nrow(nf)) map <- addCircleMarkers(map, data = nf, lng = ~lon, lat = ~lat, radius = 3, weight = 0.5,
-                                        color = sev_line[["Non-fatal"]], fillColor = sev_fill[["Non-fatal"]],
+                                        color = sev_line[["Non-Fatal"]], fillColor = sev_fill[["Non-Fatal"]],
                                         fillOpacity = 0.35, popup = popup_txt(nf))
   if (nrow(fa)) map <- addMarkers(map, data = fa, lng = ~lon, lat = ~lat, icon = fatal_icon, popup = popup_txt(fa))
   map
@@ -219,13 +219,13 @@ cluster_icon <- function(fill, border, txt) {
 }                                         # Custom JS cluster badge generator
 
 add_clusters <- function(map, df) {
-  pts <- filter(df, !is.na(lat)); nf <- filter(pts, severity == "Non-fatal"); fa <- filter(pts, severity == "Fatal")
+  pts <- filter(df, !is.na(lat)); nf <- filter(pts, severity == "Non-Fatal"); fa <- filter(pts, severity == "Fatal")
   if (nrow(nf)) map <- addCircleMarkers(map, data = nf, lng = ~lon, lat = ~lat, radius = 5, weight = 1,
-                                        color = sev_line[["Non-fatal"]], fillColor = sev_fill[["Non-fatal"]],
+                                        color = sev_line[["Non-Fatal"]], fillColor = sev_fill[["Non-Fatal"]],
                                         fillOpacity = 0.6, popup = popup_txt(nf),
                                         clusterOptions = markerClusterOptions(
                                           showCoverageOnHover = FALSE, maxClusterRadius = 45,
-                                          iconCreateFunction = cluster_icon(sev_fill[["Non-fatal"]], sev_line[["Non-fatal"]], sev_line[["Non-fatal"]])))
+                                          iconCreateFunction = cluster_icon(sev_fill[["Non-Fatal"]], sev_line[["Non-Fatal"]], sev_line[["Non-Fatal"]])))
   if (nrow(fa)) map <- addMarkers(map, data = fa, lng = ~lon, lat = ~lat, icon = fatal_icon, popup = popup_txt(fa),
                                   clusterOptions = markerClusterOptions(
                                     showCoverageOnHover = FALSE, maxClusterRadius = 45,
@@ -417,10 +417,9 @@ ui <- page_fluid(
     
     # Dashboard main panel
     div(style = "padding:14px 22px 20px;",
-        div(class = "story", "Fatal and non-fatal crashes, side by side"),
+        div(class = "story", "Fatal and Non-Fatal Crashes, Side by Side"),
         div(class = "lede", "Pick what to compare in the sidebar. Every chart, the map and the table follow the same filters."),
         uiOutput("ex_kpis"),
-        uiOutput("ex_insight"),
         
         # Spatial map and primary comparison bar chart
         div(class = "panel", h4("Where crashes happen: fatal and non-fatal together"),
@@ -507,30 +506,18 @@ server <- function(input, output, session) {
   # Top KPI cards and dynamic insight headline
   output$ex_kpis <- renderUI({
     x <- ex_data()
-    nf <- sum(x$severity == "Fatal"); nn <- sum(x$severity == "Non-fatal")
-    f <- top_share(x$victim[x$severity == "Fatal"]); n <- top_share(x$victim[x$severity == "Non-fatal"])
+    nf <- sum(x$severity == "Fatal"); nn <- sum(x$severity == "Non-Fatal")
+    f <- top_share(x$victim[x$severity == "Fatal"]); n <- top_share(x$victim[x$severity == "Non-Fatal"])
     layout_columns(
       col_widths = c(3, 3, 3, 3), fill = FALSE,
       kpi_box("Fatal crashes", fmt(nf), "matching filters"),
-      kpi_box("Non-fatal crashes", fmt(nn), "matching filters"),
+      kpi_box("Non-Fatal crashes", fmt(nn), "matching filters"),
       kpi_box("Fatal share of crashes", if (nf + nn == 0) "n/a" else paste0(pct(nf, nf + nn), "%"), "of all matching crashes"),
       kpi_box("Top victim group", ifelse(is.na(f$label), "n/a", f$label),
               sprintf("Fatal %s%% | non-fatal top: %s (%s%%)", f$share, ifelse(is.na(n$label), "n/a", n$label), n$share), small = TRUE)
     )
   })
   
-  ex_insight_html <- reactive({
-    x <- ex_data(); g <- compare_tbl(x, input$ex_by)
-    if (is.null(g)) return(empty_msg)
-    w <- g |> mutate(cat = as.character(cat)) |>
-      group_by(cat) |>
-      summarise(f = share[severity == "Fatal"], nfs = share[severity == "Non-fatal"], .groups = "drop") |>
-      mutate(gap = f - nfs) |> arrange(desc(abs(gap)))
-    r <- w[1, ]
-    sprintf("Biggest difference by <b>%s</b>: <b>%s</b> makes up <b>%s%%</b> of fatal crashes but <b>%s%%</b> of non-fatal ones.",
-            by_label(), htmlEscape(r$cat), r$f, r$nfs)
-  })
-  output$ex_insight <- renderUI(div(class = "insight", HTML(ex_insight_html())))
   
   # Interactive Leaflet map setup and proxy updates
   output$ex_map <- renderLeaflet(base_map(stops = HAS_STOPS))
@@ -566,12 +553,12 @@ server <- function(input, output, session) {
       y <- xs[xs$severity == sev, ]
       list(n = nrow(y), near = sum(y$stop_dist <= rad), med = if (nrow(y)) round(median(y$stop_dist)) else NA)
     }
-    f <- one("Fatal"); n <- one("Non-fatal")
+    f <- one("Fatal"); n <- one("Non-Fatal")
     shown <- function(o) if (o$n == 0) "n/a" else paste0(pct(o$near, o$n), "%")
     layout_columns(
       col_widths = c(3, 3, 3, 3), fill = FALSE,
       kpi_box("Fatal crashes near a stop", shown(f), sprintf("%s of %s mapped crashes within %s m", fmt(f$near), fmt(f$n), rad)),
-      kpi_box("Non-fatal crashes near a stop", shown(n), sprintf("%s of %s mapped crashes within %s m", fmt(n$near), fmt(n$n), rad)),
+      kpi_box("Non-Fatal crashes near a stop", shown(n), sprintf("%s of %s mapped crashes within %s m", fmt(n$near), fmt(n$n), rad)),
       kpi_box("Median distance to a stop", paste0(ifelse(is.na(f$med), "n/a", f$med), " m | ", ifelse(is.na(n$med), "n/a", n$med), " m"), "fatal | non-fatal"),
       kpi_box("Stops with a crash nearby", fmt(length(unique(xs$stop_idx[xs$stop_dist <= rad]))),
               paste0("of ", fmt(nrow(stops_sel())), " selected stops"))
@@ -585,13 +572,13 @@ server <- function(input, output, session) {
   ex_tab <- reactive({
     x <- ex_data(); g <- compare_tbl(x, input$ex_by); req(g)
     f <- g |> filter(severity == "Fatal") |> transmute(cat = as.character(cat), fn = as.integer(n), fp = share)
-    n <- g |> filter(severity == "Non-fatal") |> transmute(cat = as.character(cat), nn = as.integer(n), np = share)
+    n <- g |> filter(severity == "Non-Fatal") |> transmute(cat = as.character(cat), nn = as.integer(n), np = share)
     tab <- left_join(f, n, by = "cat") |>
       mutate(gap = round(fp - np, 1), rate = ifelse(fn + nn > 0, round(100 * fn / (fn + nn), 1), NA_real_))
     tab <- tab[match(levels(g$cat), tab$cat), ]
     tab <- tab[!is.na(tab$cat), ]
     setNames(tab[, c("cat", "fn", "fp", "nn", "np", "gap", "rate")],
-             c(by_label(), "Fatal", "Fatal %", "Non-fatal", "Non-fatal %", "Gap (pp)", "Fatal share of crashes %"))
+             c(by_label(), "Fatal", "Fatal %", "Non-Fatal", "Non-Fatal %", "Gap (pp)", "Fatal share of crashes %"))
   })
   output$ex_table <- renderTable(ex_tab(), striped = TRUE, digits = 1, na = "-")
   
@@ -626,7 +613,7 @@ server <- function(input, output, session) {
     title = "How to use this dashboard", easyClose = TRUE,
     tags$ol(
       tags$li(tags$b("The filter sidebar"), " controls every chart on the page. Each filter applies to both fatal and non-fatal crashes."),
-      tags$li(tags$b("Compare by"), " changes what the bar chart, the table and the headline sentence compare."),
+      tags$li(tags$b("Compare by"), " changes what the bar chart and the table compare."),
       tags$li(tags$b("The map"), " shows fatal crashes as maroon diamonds and non-fatal ones as yellow dots."),
       tags$li(tags$b("Reset all"), " puts every filter back to its starting position.")),
     footer = tagList(tags$button(type = "button", class = "btn btn-primary", `data-bs-dismiss` = "modal",
@@ -638,7 +625,7 @@ server <- function(input, output, session) {
     title = "About the data and where it comes from", easyClose = TRUE, footer = modalButton("Close"),
     p("Kolkata Police road accident records for 2021-2023 (fatal and non-fatal sheets), shared by the Kolkata Police Department."),
     tags$ul(
-      tags$li(sprintf("Crashes: %s fatal and %s non-fatal.", fmt(sum(d$severity == "Fatal")), fmt(sum(d$severity == "Non-fatal")))),
+      tags$li(sprintf("Crashes: %s fatal and %s non-fatal.", fmt(sum(d$severity == "Fatal")), fmt(sum(d$severity == "Non-Fatal")))),
       tags$li(sprintf("Location: %s%% of crashes have a usable position inside Kolkata.", round(100 * mean(!is.na(d$lat))))),
       if (HAS_STOPS) tags$li(sprintf("Bus stops: %s stops inside Kolkata.", fmt(nrow(STOPS)))),
       tags$li("Counts are crashes recorded by the police.")))))

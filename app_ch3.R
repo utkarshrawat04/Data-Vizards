@@ -37,6 +37,16 @@ STATIONS <- sort(unique(fatal$station[fatal$station != "Not recorded"]))
 USER_COL <- c("Pedestrian" = MAROON, "Cyclist" = YELLOW, "Rider (2-wheeler)" = TEAL,
               "Pillion rider" = "#8a9a5b", "Passenger / occupant" = "#6d7bb0", "Other" = "#9b9298")                # Color palettes and pluralization helper lookup tables
 
+# Title Case for headlines (small words such as "and", "of", "to" stay lowercase)
+title_case <- function(x) {
+  small <- c("a", "an", "and", "as", "at", "but", "by", "for", "in", "of", "on", "or", "the", "to", "vs", "with", "from")
+  vapply(strsplit(x, " ", fixed = TRUE), function(w) {
+    cap <- seq_along(w) == 1 | !(tolower(w) %in% small)
+    w[cap] <- paste0(toupper(substr(w[cap], 1, 1)), substr(w[cap], 2, nchar(w[cap])))
+    paste(w, collapse = " ")
+  }, character(1))
+}
+
 pct  <- function(a, b) if (b > 0) 100 * a / b else NA_real_
 fmt_pct <- function(x, d = 0) ifelse(is.na(x), "–", paste0(formatC(x, format = "f", digits = d), "%"))
 
@@ -151,7 +161,7 @@ server <- function(input, output, session) {
   clear_x <- function() { for (k in c("age", "sex", "gu", "gv", "dv", "dp", "helmet", "stn")) xf[[k]] <- NULL }               # Initialize cross-filtering reactive values
   unclick <- function(src) runjs(sprintf("Shiny.setInputValue('plotly_click-%s', null, {priority:'event'});", src))
   
-
+  
   base <- reactive({
     d <- fatal |> filter(year %in% as.integer(input$year))
     if (!identical(input$veh, "All vehicles")) d <- d |> filter(vehicle == input$veh)
@@ -228,7 +238,7 @@ server <- function(input, output, session) {
   })                                   # Sidebar match count box renderer
   
   
-  output$headline <- renderText({
+  headline_raw <- reactive({
     d <- cur()
     if (nrow(d) < 10) return("Too few deaths to summarise: widen the filters")
     tab <- sort(table(d$road_user), decreasing = TRUE)
@@ -239,6 +249,7 @@ server <- function(input, output, session) {
       sprintf("Pedestrians are %d%% of deaths; most are hit by %s", share, who)
     } else sprintf("%s are the largest group of victims, at %d%% of deaths", user_plural[[as.character(top)]], share)
   })                                    # Dynamic story headline text generator
+  output$headline <- renderText(title_case(headline_raw()))
   
   
   rate_parts <- reactive({
