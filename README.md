@@ -5,6 +5,7 @@
 ```text
 Data Wizards/
 ├── data/
+│   ├── all_crashes_clean.rds
 │   ├── bus_stops.xlsx
 │   ├── ch4_crashes_clean.rds
 │   ├── crashes_ch2.rds
@@ -23,7 +24,6 @@ Data Wizards/
 ├── app_ch3.R
 ├── app_ch4.R
 └── app_explore.R
-
 ```
 
 ---
@@ -32,6 +32,7 @@ Data Wizards/
 
 ### Root R Scripts (Shiny Apps)
 
+* `app_ch1.R`: Chapter 1 R Shiny app ("Cars crash, heavy vehicles kill") — compares each vehicle group's share of all crashes with its share of fatal crashes (dot chart), shows how deadly a crash is for each vehicle (fatal crashes per 100 crashes, with 95% ranges), tracks fatal vs. non-fatal crashes per year, and profiles the typical victim for the selected filters. Installs any missing packages on first run.
 * `app_ch2.R`: Chapter 2 R Shiny app ("The Volume Problem") — explores hourly/monthly crash trends, station-hour heatmaps, and station/point maps for Kolkata crashes (2021–2023).
 * `app_ch3.R`: Chapter 3 R Shiny app ("The Severity Problem") — analyzes fatal crashes using an age-sex pyramid, victim-vs-vehicle grid, day-vs-night comparison/fatality rates, and two-wheeler helmet waffle chart.
 * `app_ch4.R`: Chapter 4 R Shiny app ("The main culprit: the bus") — examines bus crash proximity to bus stops via a Leaflet map, cumulative distance curve, top stops chart, victim breakdown, and fatal vehicle context.
@@ -47,13 +48,11 @@ Data Wizards/
 ### R Workspace & Cached Data Files
 
 * `.RData` & `.Rhistory`: Saved R workspace objects and command history from R sessions.
-* `data/ch4_crashes_clean.rds` & `data/crashes_ch2.rds`: Cached R serialized data objects used for faster loading in the Chapter 4 and Chapter 2 Shiny apps.
+* `data/all_crashes_clean.rds`, `data/ch4_crashes_clean.rds` & `data/crashes_ch2.rds`: Cached R serialized data objects used for faster loading in the Chapter 1, Chapter 4 and Chapter 2 Shiny apps. They are rebuilt automatically from `data/data.xlsx` if they are deleted or if the Excel file is newer.
 
 ### Non-R Data Files (`data/`)
 
 * `bus_stops.xlsx`, `data.xlsx`, `fatal_clean.csv`, and `nonfatal_slim.csv` are raw/tabular Excel and CSV datasets read by the R scripts.
-
-
 
 ---
 
@@ -61,7 +60,8 @@ Data Wizards/
 
 Each R Shiny app depends on these files in the project:
 
+* `app_ch1.R` = (`R/clean_data.R`, `R/clean_fatal.R`, `R/shared_theme.R`, `data/data.xlsx`, `data/all_crashes_clean.rds`)
 * `app_ch2.R` = (`R/clean_data.R`, `R/clean_fatal.R`, `R/shared_theme.R`, `data/crashes_ch2.rds`, `data/data.xlsx`)
 * `app_ch3.R` = (`R/shared_theme.R`, `R/clean_fatal.R`, `data/fatal_clean.csv`, `data/nonfatal_slim.csv`)
 * `app_ch4.R` = (`R/clean_data.R`, `R/clean_fatal.R`, `R/bus_stops.R`, `R/shared_theme.R`, `data/data.xlsx`, `data/bus_stops.xlsx`, `data/ch4_crashes_clean.rds`)
-* `app_explore.R` = (`R/clean_data.R`, `R/clean_fatal.R`, `R/bus_stops.R`, `R/shared_theme.R`, `data/accidents.rds`, `data/crashes_ch2.rds`, `data/data.xlsx`, `data/bus_stops.xlsx`)****
+* `app_explore.R` = (`R/clean_data.R`, `R/clean_fatal.R`, `R/bus_stops.R`, `R/shared_theme.R`, `data/accidents.rds`, `data/crashes_ch2.rds`, `data/data.xlsx`, `data/bus_stops.xlsx`). `data/accidents.rds` is created automatically on first run if it is missing.
